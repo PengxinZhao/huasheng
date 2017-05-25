@@ -1,0 +1,124 @@
+<% include ../head %>
+<script>
+  function renzheng(){
+    $('#main').load('/home/renzheng.html');
+  }
+  function newMsg(){
+  	sendNewForm.reset();
+    titlelabel = '发送新消息';
+    $('#myModalLabel').text(titlelabel);
+      $('#myModal').modal('show');
+  }
+  function deletemsg(id){
+
+    if(confirm("是否删除该信息")){
+      
+        location.href='/home/deletemsgs?id='+id;
+    }
+}
+  function replymsg(thisa,rid){
+      reNicheng = thisa.parentElement.parentElement.children[0].innerText;
+      titlelabel = '回复:'+reNicheng;
+     sendNewForm.nicheng.value=reNicheng+';';
+     $('#myModalLabel').text(titlelabel);
+      $('#myModal').modal('show');
+    }
+  
+  function onSendNew(){
+              $.post('/msg/sendmsg',$('#sendNewForm').serialize(),
+                function(rehtml){
+                  if(rehtml==1){
+                    alert('发送成功');
+                    $('#myModal').modal('hide');
+                  }else{
+                    alert('发送失败');
+                  }
+                });
+              return false;
+            }  
+</script>
+<body>
+<div class="row">
+<div class="col-sm-1"></div>
+<div class="col-sm-2"  style='margin-top:50px'>
+  <% include ./left %>
+</div>
+        <div class="col-sm-7" id='main'>
+          <table class="table table-bordered">
+        <caption>消息列表
+        <button type="button" class="btn btn-primary" onclick='newMsg()' style='float:right'>新消息</button>
+        </caption>
+        <thead>
+          <tr>
+            <th>发送者</th>
+            <th>内容</th>
+            <th>发送时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rs.forEach(function(row){ %>
+          <tr>
+            <td><%-row.nicheng%></td>
+            <td><%-row.message%></td>
+            <td>
+              <%
+              time = row.createtime;
+              %>
+            <%-time.getFullYear()%>年
+            <%-time.getMonth()+1%>月
+            <%-time.getDate()%>日
+            </td>
+            <td>
+              <a href='#' onclick='replymsg(this,<%-row.sendid%>)'>回复</a>&nbsp;
+              <a href='#' onclick='deletemsg("<%-row.id%>")'>删除</a>
+            </td>
+          </tr>
+          <% }) %>
+          <tr>
+          	<% cpage = parseInt(cpage); %>
+          	<td colspan='4' align='center'>
+          		共<%-rowCount%>条消息&nbsp;
+          		第<%-cpage%>/<%-sumPage%>页&nbsp;
+          		<%if(cpage>1){%>
+          		<a href='./?cpage=1'>首页</a>&nbsp;
+          		<a href='./?cpage=<%-cpage-1%>'>上一页</a>&nbsp;
+          		<%}%>
+          		<% if(cpage<sumPage){%>
+          		<a href='./?cpage=<%-cpage+1%>'>下一页</a>&nbsp;
+          		<a href='./?cpage=<%-sumPage%>'>尾页</a>&nbsp;
+          		<%}%>
+          		<% for(i=1;i<=sumPage;i++){ %>
+          			<a href='./?cpage=<%-i%>'><%-i%></a>&nbsp;
+          		<% } %>	
+          </tr>
+        </tbody>
+      </table>
+        </div>
+        <div class="col-sm-1"></div>
+        <!-- 模态框（Modal） -->
+      <!-- 模态框 -->
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+          <form id='sendNewForm' name='sendNewForm' onsubmit="return onSendNew();">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                      <h4 class="modal-title" id="myModalLabel">发送新消息</h4>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                <input type="text" class="form-control" name="nicheng" placeholder="请输入收件人昵称"><br/>
+                <textarea name='message' class="form-control" rows="6" placeholder="请输入消息内容"></textarea>
+              </div>
+                  </div>
+                  <div class="modal-footer" style='text-align: center'>
+                    <button type="submit" class="btn btn-primary">发送</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                  </div>
+              </div>
+             </form>
+          </div>
+      </div>
+  </body>
+</html>
